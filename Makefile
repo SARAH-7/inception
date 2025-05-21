@@ -29,8 +29,8 @@ clean:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down -v
 
 fclean: clean
-	rm -r /home/${USER}/data/mysql
-	rm -r /home/${USER}/data/wordpress
+	rm -r ${HOME}/data/mysql
+	rm -r ${HOME}/data/wordpress
 	docker system prune -a -f
 
 restart: clean build

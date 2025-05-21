@@ -1,140 +1,66 @@
+version: "3.7"
+
 services:
-  mariadb:
-    build: ./configurations/mariadb
-    image: mariadb
-    container_name: mariadb
-    volumes:
-      - mdb:/var/lib/mysql
-    expose:
-        - "3306"
+  nginx:
+    container_name: nginx
+    build: requirements/nginx/
     env_file:
       - .env
-    networks:
-      - inception_net
+    volumes:
+      - wordpress:/var/www/wordpress
+    depends_on: wordpress
+    networks: inception
+    ports:
+      - 443:443
+    restart: on-failure
+
+  mariadb:
+    container_name: mariadb
+    build: requirements/mariadb/
+    env_file: 
+      - .env
+    volumes:
+      - mariadb:/var/lib/mysql
+    networks: inception
     restart: on-failure
 
   wordpress:
-    build: ./configurations/wordpress
-    image: wordpress
     container_name: wordpress
-    volumes:
-      - wp:/var/www/html
-    depends_on:
-      - mariadb
-    env_file:
+    build: requirements/wordpress/
+    env_file: 
       - .env
-    networks:
-      - inception_net
-    expose:
-      - "9000"
-    restart: on-failure
-  
-  nginx:
-    build: ./configurations/nginx
-    image: nginx
-    container_name: nginx
     volumes:
-      - wp:/var/www/html
-    ports:
-      - 443:443
-    networks:
-      - inception_net
-    depends_on:
-      - wordpress
+      - wordpress:/var/www/wordpress
+    depends_on: mariadb
+    environment:
+      WP_ADMIN_USER: admin
+      WP_ADMIN_EMAIL: admin@example.com
+      WP_SITE_TITLE: "My Inception Site"
+      WP_SITE_URL: "https://sbakhit.42.fr"
+    secrets:
+      - credentials
+    networks: inception
     restart: on-failure
-
-  # redis:
-  #   build: ./configurations/bonus/redis
-  #   image: redis
-  #   container_name: redis
-  #   ports:
-  #     - 6379:6379
-  #   networks:
-  #     - inception_net
-  #   restart: on-failure
-
-  # adminer:
-  #   build: ./configurations/bonus/adminer
-  #   image: adminer
-  #   container_name: adminer
-  #   networks:
-  #     - inception_net
-  #   depends_on:
-  #     - mariadb
-  #   ports:
-  #     - "8080:8080"
-  #   restart: on-failure
-
-  # ftp:
-  #   build: ./configurations/bonus/FTP
-  #   image: ftp
-  #   container_name: ftp
-  #   ports:
-  #     - "40000-40005:40000-40005"
-  #     - "21:21"
-  #     - "20:20"
-  #   networks:
-  #     - inception_net
-  #   volumes:
-  #     - wp:/home/sbakhit/ftp
-  #   depends_on:
-  #     - wordpress
-  #   env_file:
-  #     - .env
-  #   restart: on-failure
-
-  # static_site:
-  #   build: ./configurations/bonus/static_site
-  #   image: static_site
-  #   container_name: static_site
-  #   networks:
-  #     - inception_net
-  #   ports:
-  #     - "81:81"
-  #   restart: on-failure
-
-  # node-js:
-  #   build: ./configurations/bonus/node
-  #   image: node-js
-  #   container_name: node-js
-  #   networks:
-  #     - inception_net
-  #   ports:
-  #     - "1337:1337"
-  #   depends_on:
-  #     - mariadb
-  #     - wordpress
-  #   env_file:
-  #     - .env
-  #   restart: on-failure
-
-  # cadvisor:
-  #   container_name: cadvisor
-  #   build: ./configurations/bonus/cadvisor
-  #   image: cadvisor
-  #   ports:
-  #      - "8000:8080"
-  #   networks:
-  #    - inception_net
-  #   volumes:
-  #     - /:/rootfs
-  #     - /var/run:/var/run
-  #     - /sys:/sys
-  #     - /var/lib/docker/:/var/lib/docker
-  #   restart: always
 
 volumes:
-  mdb:
-   driver_opts:
+  wordpress:
+    driver: local
+    driver_opts:
       type: 'none'
-      o: bind
-      device: /home/sbakhit/data/mysql
-  wp:
-   driver_opts:
+      o: 'bind'
+      device: '/Users/login/data/wordpress'
+
+  mariadb:
+    driver: local
+    driver_opts:
       type: 'none'
-      o: bind
-      device: /home/sbakhit/data/wordpress
-  
+      o: 'bind'
+      device: '/Users/login/data/mariadb'
+
 networks:
-    inception_net:
-        driver: bridge
+  inception:
+    driver: bridge
+
+secrets:
+  credentials:
+    file: ./secrets/credentials
