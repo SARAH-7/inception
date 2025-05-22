@@ -8,8 +8,10 @@ services:
       - .env
     volumes:
       - wordpress:/var/www/wordpress
-    depends_on: wordpress
-    networks: inception
+    depends_on:
+      - wordpress
+    networks:
+      - inception
     ports:
       - 443:443
     restart: on-failure
@@ -21,7 +23,8 @@ services:
       - .env
     volumes:
       - mariadb:/var/lib/mysql
-    networks: inception
+    networks:
+      - inception
     restart: on-failure
 
   wordpress:
@@ -31,7 +34,8 @@ services:
       - .env
     volumes:
       - wordpress:/var/www/wordpress
-    depends_on: mariadb
+    depends_on:
+      - mariadb
     environment:
       WP_ADMIN_USER: admin
       WP_ADMIN_EMAIL: admin@example.com
@@ -39,7 +43,8 @@ services:
       WP_SITE_URL: "https://sbakhit.42.fr"
     secrets:
       - credentials
-    networks: inception
+    networks:
+      - inception
     restart: on-failure
 
 volumes:
@@ -48,14 +53,14 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/Users/login/data/wordpress'
+      device: '/Users/$USER/data/wordpress'
 
   mariadb:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/Users/login/data/mariadb'
+      device: '/Users/$USER/data/mariadb'
 
 networks:
   inception:
