@@ -1,14 +1,14 @@
-#!/bin/bash
+#!/bin/sh
+set -e
 
-server {
-    #SSL/TLS Configuration
-    listen 443 ssl;
-    ssl_protocols TLSv1.3;
-    ssl_certificate /etc/ssl/certs/sbakhit.crt;
-    ssl_certificate_key /etc/ssl/private/sbakhit.key;
+# Check if SSL certs exist; generate if missing
+if [ ! -f /etc/ssl/certs/sbakhit.crt ] || [ ! -f /etc/ssl/private/sbakhit.key ]; then
+    echo "Generating self-signed SSL certificate..."
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout /etc/ssl/private/sbakhit.key \
+        -out /etc/ssl/certs/sbakhit.crt \
+        -subj "/CN=localhost"
+fi
 
-    #root and index and server_name
-    root /var/www/html;
-    server_name localhost;
-    index index.php index.html index.htm;
-}
+echo "Starting nginx..."
+exec nginx -g "daemon off;"

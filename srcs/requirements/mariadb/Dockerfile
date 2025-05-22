@@ -1,8 +1,15 @@
-FROM mariadb:10.6
+FROM debian:buster
 
-COPY conf/mariadb.cnf /etc/mysql/conf.d/mariadb.cnf
-COPY tools/script.sh /usr/local/bin/init.sh
+RUN apt-get update && \
+    apt-get install -y mariadb-server && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN chmod +x /usr/local/bin/init.sh
+COPY conf/mariadb.cnf /etc/mysql/mariadb.conf.d/mariadb.cnf
+COPY tools/script.sh /usr/local/bin/script.sh
 
-CMD ["/usr/local/bin/init.sh"]
+RUN chmod +x /usr/local/bin/script.sh
+
+EXPOSE 3306
+
+CMD ["sh", "/usr/local/bin/script.sh"]

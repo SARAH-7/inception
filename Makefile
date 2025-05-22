@@ -15,7 +15,7 @@ DOCKER_COMPOSE=docker compose
 DOCKER_COMPOSE_FILE = ./srcs/docker-compose.yml
 
 build:
-	mkdir -p ${HOME}/data/mysql
+	mkdir -p ${HOME}/data/mariadb
 	mkdir -p ${HOME}/data/wordpress
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up --build -d
 	
@@ -29,7 +29,7 @@ clean:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down -v
 
 fclean: clean
-	rm -r ${HOME}/data/mysql
+	rm -r ${HOME}/data/mariadb
 	rm -r ${HOME}/data/wordpress
 	docker system prune -a -f
 

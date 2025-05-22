@@ -3,12 +3,12 @@ set -e
 
 echo "Starting WordPress container..."
 
-: "${WP_DB_HOST:=mariadb}"
+: "${WP_HOST:=mariadb}"
 
 chown -R www-data:www-data /var/www
 
-echo "Waiting for MariaDB at $WP_DB_HOST..."
-until mysqladmin ping -h"$WP_DB_HOST" --silent; do
+echo "Waiting for MariaDB at $WP_HOST..."
+until mysqladmin ping -h"$WP_HOST" --silent; do
     sleep 1
 done
 echo "MariaDB is ready."

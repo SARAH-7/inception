@@ -7,14 +7,14 @@ services:
     env_file:
       - .env
     volumes:
-      - wordpress:/var/www/wordpress
+      - wordpress:/var/www/html
     depends_on:
       - wordpress
     networks:
       - inception
     ports:
       - 443:443
-    restart: on-failure
+    restart: always
 
   mariadb:
     container_name: mariadb
@@ -25,7 +25,12 @@ services:
       - mariadb:/var/lib/mysql
     networks:
       - inception
-    restart: on-failure
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}   # from your .env
+      MYSQL_DATABASE: ${WP_NAME}                # wordpress
+      MYSQL_USER: ${WP_USER}                     # wp_user
+      MYSQL_PASSWORD: ${WP_PASSWORD}             # wp_pass
 
   wordpress:
     container_name: wordpress
@@ -33,34 +38,40 @@ services:
     env_file: 
       - .env
     volumes:
-      - wordpress:/var/www/wordpress
+      - wordpress:/var/www/html
     depends_on:
       - mariadb
     environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_NAME: ${WP_NAME}
+      WORDPRESS_DB_USER: ${WP_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_PASSWORD}
       WP_ADMIN_USER: admin
       WP_ADMIN_EMAIL: admin@example.com
-      WP_SITE_TITLE: "My Inception Site"
-      WP_SITE_URL: "https://sbakhit.42.fr"
+      WP_SITE_TITLE: My Inception Site
+      WP_SITE_URL: https://sbakhit.42.fr
     secrets:
       - credentials
     networks:
       - inception
-    restart: on-failure
+    restart: always
 
 volumes:
   wordpress:
+    name: wordpress
     driver: local
     driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/Users/$USER/data/wordpress'
+      type: none
+      o: bind
+      device: /Users/sbakhit/data/wordpress
 
   mariadb:
+    name: mariadb
     driver: local
     driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/Users/$USER/data/mariadb'
+      type: none
+      o: bind
+      device: /Users/sbakhit/data/mariadb
 
 networks:
   inception:
@@ -68,4 +79,4 @@ networks:
 
 secrets:
   credentials:
-    file: ./secrets/credentials
+    file: /Users/sbakhit/Desktop/inception/secrets

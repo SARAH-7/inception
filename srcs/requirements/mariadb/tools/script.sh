@@ -1,34 +1,25 @@
 #!/bin/sh
-
-service mysql start;
-					mysql -e "CREATE DATABASE IF NOT EXISTS \`${SQL_DATABASE}\`;"
-					mysql -e "CREATE USER IF NOT EXISTS \`${SQL_USER}\`@'localhost' IDENTIFIED BY '${SQL_PASSWORD}';"
-					mysql -e "GRANT ALL PRIVILEGES ON \`${SQL_DATABASE}\`.* TO \`${SQL_USER}\`@'%' IDENTIFIED BY '${SQL_PASSWORD}';"
-					mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${SQL_ROOT_PASSWORD}';"
-					mysql -e "FLUSH PRIVILEGES;"
-					mysqladmin -u root -p$SQL_ROOT_PASSWORD shutdown
-					exec mysqld_safe
-
-
-#!/bin/bash
 set -e
 
-# Check if the database already exists (i.e., this isn't the first run)
-if [ ! -d "/var/lib/mysql/${SQL_DATABASE}" ]; then
-    echo "Initializing MariaDB..."
+: "${MYSQL_DB:?Missing MYSQL_DB}"
+: "${MYSQL_USER:?Missing MYSQL_USER}"
+: "${MYSQL_PASSWORD:?Missing MYSQL_PASSWORD}"
+: "${MYSQL_ROOT_PASSWORD:?Missing MYSQL_ROOT_PASSWORD}"
 
-    mysqld --bootstrap <<-EOSQL
-        CREATE DATABASE IF NOT EXISTS \`${SQL_DATABASE}\`;
-        CREATE USER IF NOT EXISTS \`${SQL_USER}\`@'%' IDENTIFIED BY '${SQL_PASSWORD}';
-        GRANT ALL PRIVILEGES ON \`${SQL_DATABASE}\`.* TO \`${SQL_USER}\`@'%';
-        ALTER USER 'root'@'localhost' IDENTIFIED BY '${SQL_ROOT_PASSWORD}';
+echo "[Init] Checking if MariaDB is already initialized..."
+
+if [ -d "/var/lib/mysql/${MYSQL_DB}" ]; then
+    echo "[Init] MariaDB already initialized. Skipping setup."
+else
+    echo "[Init] Initializing MariaDB..."
+    mysqld --user=mysql --bootstrap <<-EOSQL
+        CREATE DATABASE IF NOT EXISTS \`${MYSQL_DB}\`;
+        CREATE USER IF NOT EXISTS \`${MYSQL_USER}\`@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+        GRANT ALL PRIVILEGES ON \`${MYSQL_DB}\`.* TO \`${MYSQL_USER}\`@'%';
+        ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
         FLUSH PRIVILEGES;
 EOSQL
-
-    echo "MariaDB initialization complete."
-else
-    echo "MariaDB already initialized. Skipping setup."
+    echo "[Init] MariaDB initialization complete."
 fi
 
-# Start the server
 exec mysqld_safe
