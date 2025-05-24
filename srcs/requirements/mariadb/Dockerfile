@@ -1,15 +1,12 @@
-FROM debian:buster
+FROM alpine:3.20
 
-RUN apt-get update && \
-    apt-get install -y mariadb-server && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add --no-cache mariadb mariadb-client openrc \
+ && mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld
 
-COPY conf/mariadb.cnf /etc/mysql/mariadb.conf.d/mariadb.cnf
-COPY tools/script.sh /usr/local/bin/script.sh
+COPY tools/script.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-RUN chmod +x /usr/local/bin/script.sh
-
+VOLUME ["/var/lib/mysql"]
 EXPOSE 3306
 
-CMD ["sh", "/usr/local/bin/script.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

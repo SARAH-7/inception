@@ -10,29 +10,28 @@
 #                                                                              #
 # **************************************************************************** #
 
-DOCKER_COMPOSE=docker compose
-
-DOCKER_COMPOSE_FILE = ./srcs/docker-compose.yml
+DOCKER_COMPOSE = docker compose
+COMPOSE_FILE = srcs/docker-compose.yml
+DATA_DIR = ${HOME}/data
 
 build:
-	mkdir -p ${HOME}/data/mariadb
-	mkdir -p ${HOME}/data/wordpress
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up --build -d
-	
+	@mkdir -p secrets
+	@mkdir -p $(DATA_DIR)/mariadb $(DATA_DIR)/wordpress
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up --build -d
+
+up:
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
+
 down:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
-	
-kill:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) kill
-	
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
+
 clean:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down -v
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down -v
+	@rm -rf $(DATA_DIR)/mariadb $(DATA_DIR)/wordpress
 
 fclean: clean
-	rm -r ${HOME}/data/mariadb
-	rm -r ${HOME}/data/wordpress
-	docker system prune -a -f
+	@docker system prune -af --volumes
 
-restart: clean build
+restart: fclean build
 
-.PHONY: kill build down clean restart
+.PHONY: build up down clean fclean restart
