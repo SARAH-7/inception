@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     volumes:
-      - wordpress:/var/www/html
+      - ./data/wordpress:/var/www/html
     depends_on:
       - wordpress
     networks:
@@ -22,10 +22,12 @@ services:
     env_file:
       - .env
     volumes:
-      - mariadb:/var/lib/mysql
+      - ./data/mariadb:/var/lib/mysql
     networks:
       - inception
     restart: always
+    ports:
+      - 3306:3306
 
   wordpress:
     container_name: wordpress
@@ -33,12 +35,19 @@ services:
     env_file:
       - .env
     volumes:
-      - wordpress:/var/www/html
+      - ./data/wordpress:/var/www/html
     depends_on:
       - mariadb
     networks:
       - inception
     restart: always
+
+    
+
+networks:
+  inception:
+    name: inception
+    driver: bridge
 
 volumes:
   wordpress:
@@ -46,15 +55,11 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /Users/sbakhit/data/wordpress
+      device: /home/sbakhit/data/wordpress
 
   mariadb:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /Users/sbakhit/data/mariadb
-
-networks:
-  inception:
-    driver: bridge
+      device: /home/sbakhit/data/mariadb 
