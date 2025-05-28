@@ -1,21 +1,10 @@
-FROM	debian:bullseye
+FROM debian:bullseye
 
-RUN		apt update && apt upgrade -y && apt install -y \
-    	openssl \
-    	nginx \
-    	curl \
-    	vim \
-    	sudo
-RUN		rm -f /etc/nginx/nginx.conf && \
-		mkdir -p /var/www/html && \
-		chown -R www-data:www-data /var/www/html && \
-		chmod -R 755 /var/www/html
+RUN apt -y update && apt install -y nginx && apt upgrade -y openssl
 
-COPY 	./conf/nginx.conf /etc/nginx/nginx.conf
-COPY 	./tools/script.sh /setup_script.sh
+COPY ./conf/nginx.conf /etc/nginx/conf/nginx.conf
+COPY ./tools/conf.sh /usr/local/bin/conf.sh
 
-RUN chmod +x /setup_script.sh
+RUN chmod +x /usr/local/bin/conf.sh
 
-EXPOSE 443
-
-ENTRYPOINT ["sh", "/setup_script.sh"]
+ENTRYPOINT ["conf.sh"]

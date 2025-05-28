@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.9"
 
 services:
   nginx:
@@ -7,42 +7,42 @@ services:
     env_file:
       - .env
     volumes:
-      - ./data/wordpress:/var/www/html
-    depends_on:
-      - wordpress
-    networks:
-      - inception
+      - wordpress:/var/www/html/wordpress
     ports:
       - "443:443"
+    networks:
+      - inception
+    depends_on:
+      - wordpress
     restart: always
 
   mariadb:
     container_name: mariadb
     build: requirements/mariadb/
-    env_file:
-      - .env
     volumes:
-      - ./data/mariadb:/var/lib/mysql
+      - mariadb:/var/lib/mysql
     networks:
       - inception
-    restart: always
+    env_file:
+      - .env
     ports:
-      - 3306:3306
-
+      - "3306:3306"
+    restart: always
+    
   wordpress:
     container_name: wordpress
     build: requirements/wordpress/
     env_file:
       - .env
     volumes:
-      - ./data/wordpress:/var/www/html
-    depends_on:
-      - mariadb
+      - wordpress:/var/www/html/wordpress
     networks:
       - inception
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mariadb
     restart: always
-
-    
 
 networks:
   inception:
@@ -51,15 +51,17 @@ networks:
 
 volumes:
   wordpress:
+    name: wordpress
     driver: local
     driver_opts:
-      type: none
+      type: 'none'
       o: bind
-      device: /home/sbakhit/data/wordpress
+      device: '/home/$USER/data/wordpress'
 
   mariadb:
+    name: mariadb
     driver: local
     driver_opts:
-      type: none
+      type: 'none'
       o: bind
-      device: /home/sbakhit/data/mariadb 
+      device: '/home/$USER/data/mariadb'

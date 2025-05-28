@@ -1,12 +1,13 @@
-FROM alpine:3.19
+FROM debian:bullseye
 
-RUN apk update && apk add --no-cache mariadb mariadb-client openrc \
- && mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld
+USER root
 
-COPY tools/script.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN apt update && apt install -y \
+    mariadb-server \
+    mariadb-client
 
-VOLUME ["/var/lib/mysql"]
-EXPOSE 3306
+COPY ./tools/docker_entry.sh /usr/local/bin/docker_entry.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN chmod +x /usr/local/bin/docker_entry.sh
+
+ENTRYPOINT ["docker_entry.sh"]

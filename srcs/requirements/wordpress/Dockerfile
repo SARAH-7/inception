@@ -1,42 +1,27 @@
-FROM alpine:3.19
+FROM debian:bullseye
 
-# Install PHP, extensions, and utilities
-RUN apk update && apk add --no-cache \
-  php83 \
-  php83-fpm \
-  php83-mysqli \
-  php83-mbstring \
-  php83-gd \
-  php83-opcache \
-  php83-phar \
-  php83-xml \
-  php83-ctype \
-  php83-curl \
-  php83-json \
-  php83-tokenizer \
-  mariadb-client \
-  wget \
-  tar \
-  curl \
-  bash
+USER root
 
-# Symlink for php + php-fpm for compatibility
-RUN ln -s /usr/bin/php83 /usr/bin/php && \
-    ln -s /usr/sbin/php-fpm83 /usr/sbin/php-fpm
-RUN mkdir -p /run/php /var/www && \
-    adduser -u 82 -D -S -G www-data www-data || true && \
-    wget https://wordpress.org/latest.tar.gz -P /tmp && \
-    tar -xzf /tmp/latest.tar.gz -C /var/www && \
-    rm /tmp/latest.tar.gz && \
-    chown -R www-data:www-data /var/www/wordpress
+RUN apt update && apt install -y \
+	wget \
+	curl \
+	sendmail \
+	php-mysql \
+	php-mysqli \
+	mariadb-client \
+	php \
+	php-fpm && \
+	mkdir -p /run/php
 
-# Copy configuration and entrypoint
-COPY ./conf/wp-config.php /var/www/wordpress/wp-config.php
-COPY ./tools/script.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	chmod +x wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp
 
-WORKDIR /var/www/wordpress
+COPY ./conf/www.conf /etc/php/7.4/fpm/pool.d/
 
-EXPOSE 9000
+COPY ./tools/script.sh /usr/local/bin/docker_entry.sh
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+RUN chmod +x /usr/local/bin/docker_entry.sh
+
+ENTRYPOINT ["docker_entry.sh"]
+
