@@ -19,7 +19,7 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 
 COPY ./conf/www.conf /etc/php/7.4/fpm/pool.d/
 
-COPY ./tools/script.sh /usr/local/bin/docker_entry.sh
+COPY ./tools/docker_entry.sh /usr/local/bin/docker_entry.sh
 
 RUN chmod +x /usr/local/bin/docker_entry.sh
 
