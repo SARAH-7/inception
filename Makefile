@@ -17,7 +17,7 @@ DATA_DIR = /home/${USER}/data
 all: build up
 
 build:
-	@mkdir -p $(DATA_DIR)/mariadb $(DATA_DIR)/wordpress
+	@mkdir -p $(DATA_DIR)/mariadb $(DATA_DIR)/wordpress $(DATA_DIR)/redis
 	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up --build -d
 
 up:
