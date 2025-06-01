@@ -59,22 +59,26 @@ services:
     ports:
       - "6379:6379"
   ftp:
-    container_name: ftp
-    build: requirements/bonus/ftp
-    ports:
-      - "20:20"
-      - "21:21"
-      - "30000-30009:30000-30009"
-    env_file:
-      - .env
-    volumes:
-      - wordpress:/var/www/html/wordpress
+    container_name: 'ftp'
+    build:
+      context: ./requirements/ftp
+      dockerfile: Dockerfile
+      args:
+        FTP_USER: ${FTP_USER}
+        FTP_PASS: ${FTP_PASS}
+    image: ftp
+    restart: on-failure
     networks:
       - inception
-    restart: always
-    cap_add:
-      - NET_BIND_SERVICE
-
+    ports:
+      - "${FTP_PORT:-21}:21"
+      - "${FTP_PASSIVE_PORTS:-21100-21110}:21100-21110"
+    volumes:
+      - wordpress:/var/www/html/wordpress
+    env_file:
+      - .env
+    depends_on:
+      - wordpress
 
 
 networks:
